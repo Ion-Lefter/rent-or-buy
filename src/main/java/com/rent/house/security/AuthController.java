@@ -24,6 +24,8 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
 
     private AuthenticationManager authenticationManager;
+
+    private JwtGenerator jwtGenerator;
 //    @Autowired
 //    public AuthController(AppUserRepository appUserRepository,
 //                          RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
@@ -36,11 +38,12 @@ public class AuthController {
 
     @Autowired
     public AuthController(AppUserRepository appUserRepository,
-                          RoleRepository roleRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
+                          RoleRepository roleRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtGenerator jwtGenerator) {
         this.appUserRepository = appUserRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.jwtGenerator = jwtGenerator;
     }
 
     @PostMapping("register")
@@ -63,13 +66,15 @@ public class AuthController {
     }
 
     @PostMapping("login")
-    public ResponseEntity<String> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDto loginDto) {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String response = "You have successfully logged in!";
-        return new ResponseEntity<>(response, HttpStatus.OK);
+//        String response = "You have successfully logged in!";
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+        String token = jwtGenerator.generateToken(authentication);
+        return new ResponseEntity<>(new AuthResponseDto(token), HttpStatus.OK);
     }
 
 
