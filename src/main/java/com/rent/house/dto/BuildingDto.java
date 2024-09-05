@@ -38,5 +38,4 @@ public class BuildingDto {
     private int price;
     @NotEmpty
     private String image_url;
-
 }

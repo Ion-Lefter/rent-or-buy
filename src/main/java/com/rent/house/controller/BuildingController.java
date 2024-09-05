@@ -26,6 +26,11 @@ public class BuildingController {
     @GetMapping("/buildings")
     public List<BuildingDto> all(){return buildingService.findAllBuildings();}
 
+    @GetMapping("/user")
+    public String helloUser() {
+        return "Hello User";
+    }
+
     @GetMapping("/buildings/{id}")
     public BuildingDto getById(@PathVariable Long id) throws Exception {
      return buildingService.findById(id);

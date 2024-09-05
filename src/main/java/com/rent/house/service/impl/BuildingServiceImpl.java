@@ -4,6 +4,7 @@ import com.rent.house.dto.BuildingDto;
 import com.rent.house.model.Building;
 import com.rent.house.repository.BuildingRepository;
 import com.rent.house.service.BuildingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class BuildingServiceImpl implements BuildingService {
+
     private BuildingRepository buildingRepository;
 
     public BuildingServiceImpl(BuildingRepository buildingRepository){

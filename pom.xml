@@ -16,16 +16,19 @@
 	<properties>
 		<java.version>17</java.version>
 		<jakarta.version>3.0.2</jakarta.version>
+		<security.config.version>6.2.0</security.config.version>
+		<security.web.version>6.0.3</security.web.version>
+		<jwt.version>0.12.5</jwt.version>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.springframework.boot</groupId>-->
-<!--			<artifactId>spring-boot-starter-security</artifactId>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -74,6 +77,25 @@
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 			<version>3.2.4</version>
 		</dependency>
+
+<!--		 https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-->
+<!--		<dependency>-->
+<!--			<groupId>io.jsonwebtoken</groupId>-->
+<!--			<artifactId>jjwt</artifactId>-->
+<!--			<version>${jwt.version}</version>-->
+<!--		</dependency>-->
+
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.security</groupId>-->
+<!--			<artifactId>spring-security-config</artifactId>-->
+<!--			<version>${security.config.version}</version>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.security</groupId>-->
+<!--			<artifactId>spring-security-web</artifactId>-->
+<!--			<version>${security.web.version}</version>-->
+<!--		</dependency>-->
+
 
 	</dependencies>
 
