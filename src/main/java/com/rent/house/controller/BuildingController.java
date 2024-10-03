@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api") // Root path for all endpoints in this controller
@@ -49,6 +50,13 @@ public class BuildingController {
     @DeleteMapping("buildings/delete/{id}")
     public void deleteBuilding(@PathVariable Long id){
         buildingService.deleteBuilding(id);
+    }
+
+
+    @PostMapping("/myposts")
+    public List<BuildingDto> myPosts(@RequestBody Map<String, String> requestBody){
+        String username = requestBody.get("username");
+        return buildingService.findMyPosts(username);
     }
 
 }

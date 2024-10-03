@@ -29,11 +29,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        String authorizationHeader = request.getHeader("Authorization");
+        logger.debug("Authorization Header: " + authorizationHeader);
+
         String token = getJWTFromRequest(request);
+        logger.debug("JWT Token: " + token);
+
         if (StringUtils.hasText(token) && tokenGenerator.validateToken(token)) {
             String username = tokenGenerator.getUsernameFromJWT(token);
+            logger.debug("Username extracted from token: " + username);
 
             List<String> roles = tokenGenerator.getRolesFromJWT(token);
+
+            logger.debug("Roles extracted from token: " + roles);
+
             List<GrantedAuthority> authorities = roles.stream()
                     .map(role -> new SimpleGrantedAuthority(role.replace("ROLE_", "")))
                     .collect(Collectors.toList());

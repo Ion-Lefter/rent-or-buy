@@ -3,11 +3,17 @@ package com.rent.house.service.impl;
 import com.rent.house.dto.BuildingDto;
 import com.rent.house.model.Building;
 import com.rent.house.repository.BuildingRepository;
+import com.rent.house.security.AppUser;
+import com.rent.house.security.AppUserRepository;
 import com.rent.house.service.BuildingService;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,10 +21,19 @@ import java.util.stream.Collectors;
 @Service
 public class BuildingServiceImpl implements BuildingService {
 
-    private BuildingRepository buildingRepository;
+    private static final Logger logger = LoggerFactory.getLogger(BuildingServiceImpl.class);
 
-    public BuildingServiceImpl(BuildingRepository buildingRepository){
+    private final BuildingRepository buildingRepository;
+    private final JdbcTemplate jdbcTemplate;
+    private final AppUserRepository appUserRepository;
+    private final PostServiceImpl postService;
+
+    @Autowired
+    public BuildingServiceImpl(BuildingRepository buildingRepository, AppUserRepository appUserRepository, JdbcTemplate jdbcTemplate, PostServiceImpl postService) {
         this.buildingRepository = buildingRepository;
+        this.jdbcTemplate = jdbcTemplate;
+        this.appUserRepository = appUserRepository;
+        this.postService = postService;
     }
 
     @Override
@@ -28,26 +43,41 @@ public class BuildingServiceImpl implements BuildingService {
 
     }
 
+    //    @Override
+//    public BuildingDto findById(Long id) throws Exception {
+//        Optional<Building> optional = buildingRepository.findById(id);
+//        if (optional.isPresent()){
+//            return convertEntityToDto(optional.get());
+//        }else {
+//            return null;
+//        }
+//    }
     @Override
     public BuildingDto findById(Long id) throws Exception {
-        Optional<Building> optional = buildingRepository.findById(id);
-        if (optional.isPresent()){
-            return convertEntityToDto(optional.get());
-        }else {
-            return null;
-        }
+        return buildingRepository.findById(id)
+                .map(this::convertEntityToDto)
+                .orElseThrow(() -> new Exception("Building not found with id: " + id));
     }
 
     @Override
+    @Transactional
     public void addBuilding(BuildingDto buildingDto) {
-        Building building;
-        building = convertDtoToEntity(buildingDto);
-        buildingRepository.save(building);
+        Building building = convertDtoToEntity(buildingDto);
+        Building savedBuilding = buildingRepository.save(building);
+        buildingDto.setId(savedBuilding.getId());
+
+        AppUser appUser = appUserRepository.findByUsername(buildingDto.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+
+        postService.addDataInPosts(buildingDto, appUser);
+        logger.info("Building added: {}", buildingDto.getId());
     }
+
 
     public void editBuilding(Long id, BuildingDto buildingDto) {
         Optional<Building> optional = buildingRepository.findById(id);
-        if(optional.isPresent()){
+        if (optional.isPresent()) {
             Building building = optional.get();
             building.setCountry(buildingDto.getCountry());
             building.setCity(buildingDto.getCity());
@@ -64,14 +94,26 @@ public class BuildingServiceImpl implements BuildingService {
             building.setPrice(buildingDto.getPrice());
             building.setImage_url(buildingDto.getImage_url());
             buildingRepository.save(building);
+            logger.info("Building edited with id: {}", id);
         }
     }
 
-    public void deleteBuilding(Long id){
+
+    public void deleteBuilding(Long id) {
         buildingRepository.deleteById(id);
+        logger.info("Building deleted with id: {}", id);
     }
 
-    private BuildingDto convertEntityToDto(Building building){
+    @Override
+    public List<BuildingDto> findMyPosts(String username) {
+
+
+        List<Building> buildings = buildingRepository.findAllBuildingsByUsername(username);
+        return buildings.stream().map((building) -> convertEntityToDto(building)).collect(Collectors.toList());
+
+    }
+
+    private BuildingDto convertEntityToDto(Building building) {
         BuildingDto buildingDto = new BuildingDto();
         buildingDto.setId(building.getId());
         buildingDto.setCountry(building.getCountry());
@@ -91,7 +133,7 @@ public class BuildingServiceImpl implements BuildingService {
         return buildingDto;
     }
 
-    private Building convertDtoToEntity(BuildingDto buildingDto){
+    private Building convertDtoToEntity(BuildingDto buildingDto) {
         Building building = new Building();
         //building.setId(buildingDto.getId());
         building.setCountry(buildingDto.getCountry());
@@ -110,5 +152,6 @@ public class BuildingServiceImpl implements BuildingService {
         building.setImage_url(buildingDto.getImage_url());
         return building;
     }
+
 
 }

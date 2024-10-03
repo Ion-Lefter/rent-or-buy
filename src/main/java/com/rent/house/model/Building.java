@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
+import java.util.Set;
+
 @Data
 @Entity
 @Table(name = "building")
@@ -26,4 +28,5 @@ public class Building {
     private String date;
     private int price;
     private String image_url;
+
 }

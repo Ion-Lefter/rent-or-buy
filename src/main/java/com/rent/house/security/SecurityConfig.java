@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -27,23 +28,28 @@ public class SecurityConfig {
     private JwtAuthEntryPoint authEntryPoint;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests((authz) -> authz.requestMatchers("/api/**")
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtRequestFilter) throws Exception {
+        http.authorizeHttpRequests((authz) -> authz.requestMatchers("/api/auth/login")
                 .permitAll()
-                .requestMatchers(HttpMethod.GET)
-                .permitAll()
-                .requestMatchers(HttpMethod.DELETE)
-                .hasAuthority(ADMIN)
-                .requestMatchers(HttpMethod.POST)
-                .permitAll()
-                .requestMatchers(HttpMethod.PUT)
-                .hasAuthority(USER)
+//                .requestMatchers(HttpMethod.GET)
+//                .permitAll()
+//                .requestMatchers(HttpMethod.DELETE)
+//                .hasAuthority(ADMIN)
+//                .requestMatchers(HttpMethod.POST)
+//                .permitAll()
+//                .requestMatchers(HttpMethod.PUT)
+//                .hasAuthority(USER)
                 .anyRequest()
                 .authenticated());
 
+        //http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.exceptionHandling((exceptions) -> exceptions.authenticationEntryPoint(authEntryPoint));
         http.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.csrf(c -> c.disable());
+
+        // Add the JWT filter to the Spring Security filter chain
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

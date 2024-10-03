@@ -16,4 +16,6 @@ public interface BuildingService {
 
     public void deleteBuilding(Long id);
 
+    public List<BuildingDto> findMyPosts(String username);
+
 }
