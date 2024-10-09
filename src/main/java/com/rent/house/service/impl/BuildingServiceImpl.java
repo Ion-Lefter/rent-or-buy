@@ -2,10 +2,13 @@ package com.rent.house.service.impl;
 
 import com.rent.house.dto.BuildingDto;
 import com.rent.house.model.Building;
+import com.rent.house.model.Favorite;
 import com.rent.house.repository.BuildingRepository;
+import com.rent.house.repository.FavoriteRepository;
 import com.rent.house.security.AppUser;
 import com.rent.house.security.AppUserRepository;
 import com.rent.house.service.BuildingService;
+import com.rent.house.service.FavoriteService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,14 +29,22 @@ public class BuildingServiceImpl implements BuildingService {
     private final BuildingRepository buildingRepository;
     private final JdbcTemplate jdbcTemplate;
     private final AppUserRepository appUserRepository;
+
+    //private final FavoriteRepository favoriteRepository;
+    private final FavoriteServiceImpl favoriteService;
     private final PostServiceImpl postService;
 
     @Autowired
-    public BuildingServiceImpl(BuildingRepository buildingRepository, AppUserRepository appUserRepository, JdbcTemplate jdbcTemplate, PostServiceImpl postService) {
+    public BuildingServiceImpl(BuildingRepository buildingRepository,
+                               AppUserRepository appUserRepository,
+                               JdbcTemplate jdbcTemplate,
+                               PostServiceImpl postService,
+                               FavoriteServiceImpl favoriteService) {
         this.buildingRepository = buildingRepository;
         this.jdbcTemplate = jdbcTemplate;
         this.appUserRepository = appUserRepository;
         this.postService = postService;
+        this.favoriteService = favoriteService;
     }
 
     @Override
@@ -107,10 +118,30 @@ public class BuildingServiceImpl implements BuildingService {
     @Override
     public List<BuildingDto> findMyPosts(String username) {
 
-
+//        List<Building> buildings = buildingRepository.findAllBuildingsByUsername(username);
+//        List<BuildingDto> buildingDtoList = buildings.stream().map((building) -> convertEntityToDto(building)).collect(Collectors.toList());
+//        buildingDtoList.forEach(buildingDto -> {
+//            buildingDto.setUsername(username);
+//        });
         List<Building> buildings = buildingRepository.findAllBuildingsByUsername(username);
-        return buildings.stream().map((building) -> convertEntityToDto(building)).collect(Collectors.toList());
+        List<BuildingDto> buildingDtoList = buildings.stream()
+                .map(this::convertEntityToDto) // Use method reference for clarity
+                .peek(buildingDto -> buildingDto.setUsername(username)) // Use peek instead of forEach for side effects
+                .collect(Collectors.toList());
+        return buildingDtoList;
 
+    }
+
+    @Override
+    public List<BuildingDto> findAllPosts(String username) {
+
+        List<BuildingDto> buildingDtoList = findAllBuildings();
+        List<Favorite> favoriteList = favoriteService.findAllFavoriteBuildings(username);
+        markFavorites(buildingDtoList, favoriteList);
+        logger.info(favoriteList.toString());
+        buildingDtoList.forEach(buildingDto -> buildingDto.setUsername(username));
+
+        return buildingDtoList;
     }
 
     private BuildingDto convertEntityToDto(Building building) {
@@ -151,6 +182,17 @@ public class BuildingServiceImpl implements BuildingService {
         building.setPrice(buildingDto.getPrice());
         building.setImage_url(buildingDto.getImage_url());
         return building;
+    }
+
+    public void markFavorites(List<BuildingDto> buildingsDtoList, List<Favorite> favoriteBuildingsList) {
+        List<Long> favoriteBuildingsIds = favoriteBuildingsList.stream()
+                .map(Favorite::getBuildingId)
+                .collect(Collectors.toList()); // Collect favorite IDs into a list
+
+        for (BuildingDto buildingDto : buildingsDtoList) {
+            // Check if the current building ID is in the favorites list
+            buildingDto.setFavorite(favoriteBuildingsIds.contains(buildingDto.getId())); // Set the favorite status
+        }
     }
 
 

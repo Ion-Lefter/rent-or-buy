@@ -39,4 +39,5 @@ public class BuildingDto {
     @NotEmpty
     private String image_url;
     private String username;
+    private boolean favorite;
 }

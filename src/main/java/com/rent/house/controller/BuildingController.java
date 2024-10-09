@@ -59,4 +59,10 @@ public class BuildingController {
         return buildingService.findMyPosts(username);
     }
 
+    @PostMapping("/allposts")
+    public List<BuildingDto> allPosts(@RequestBody Map<String, String> requestBody){
+        String username = requestBody.get("username");
+        return buildingService.findAllPosts(username);
+    }
+
 }

@@ -16,4 +16,12 @@ public interface BuildingRepository extends JpaRepository <Building, Long>{
         "WHERE u.username = :username", nativeQuery = true)
     List<Building> findAllBuildingsByUsername(@Param("username") String username);
 
+
+    @Query(value = "SELECT b.* FROM building b " +
+            "JOIN posts p ON b.id = p.building_id " +
+            "JOIN users u ON p.user_id = u.id " +
+            "WHERE u.username = :username", nativeQuery = true)
+    List<Building> findAllPostsByUsername(@Param("username") String username);
+
+
 }

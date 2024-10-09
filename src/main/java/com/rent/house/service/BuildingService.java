@@ -18,4 +18,6 @@ public interface BuildingService {
 
     public List<BuildingDto> findMyPosts(String username);
 
+    public List<BuildingDto> findAllPosts(String username);
+
 }
